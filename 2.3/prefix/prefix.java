@@ -9,6 +9,7 @@ import java.util.*;
 
 public class prefix {
   public static void main(String[] args) throws Exception {
+    long startTime = System.nanoTime();
     BufferedReader in = new BufferedReader(new FileReader("prefix.in"));
     PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("prefix.out")));
     List<String> primitives = new ArrayList<String>();
@@ -27,17 +28,15 @@ public class prefix {
     // Built tree in O(M*N) where M is max primitive length and N is number of primitives (10 and 200 respectively)
     for(String p : primitives)
       trie.add(p);
-    int[][] primitiveSubstringLengthsAt = new int[s.length()][];
+    Integer[][] primitiveSubstringLengthsAt = new Integer[s.length()][];
     for(int i = 0; i < primitiveSubstringLengthsAt.length; i++)
-      primitiveSubstringLengthsAt[i] = lengths(trie.getPrefixes(s, i));
-
-    // Compute longest prefix in O(M*N) where M is sequence length and N is number of primitives
+      primitiveSubstringLengthsAt[i] = trie.getPrefixLengths(s, i);
+    // Compute longest prefix in O(M*N) where M is sequence length and N is the max length of a primitive
     int[] longestSubstringFrom = new int[s.length()+1];
     for(int i = s.length() - 1; i >= 0; i--)
       for(int prefixLength : primitiveSubstringLengthsAt[i])
         longestSubstringFrom[i] = Math.max(longestSubstringFrom[i], prefixLength + longestSubstringFrom[i+prefixLength]);
     out.println(longestSubstringFrom[0]);
-    in.close();
     out.close();
   }
   public static int[] lengths(String[] arr) {
@@ -82,16 +81,16 @@ public class prefix {
             result[j++] = (char)(i+'A')+s;
       return result;
     }
-    public String[] getPrefixes(String s, int startIndex) {
-      ArrayList<String> result = new ArrayList<String>();
+    public Integer[] getPrefixLengths(String s, int startIndex) {
+      ArrayList<Integer> result = new ArrayList<Integer>();
       if(isPrimitive)
-        result.add("");
+        result.add(0);
       if(s.length() == startIndex)
-        return result.toArray(new String[result.size()]);
+        return result.toArray(new Integer[result.size()]);
       if(children[s.charAt(startIndex)-'A'] != null)
-        for(String prefixEnd : children[s.charAt(startIndex)-'A'].getPrefixes(s, startIndex+1))
-          result.add(s.charAt(startIndex)+prefixEnd);
-      return result.toArray(new String[result.size()]);
+        for(int prefixEndingLengths : children[s.charAt(startIndex)-'A'].getPrefixLengths(s, startIndex+1))
+          result.add(1+prefixEndingLengths);
+      return result.toArray(new Integer[result.size()]);
     }
   }
 }
